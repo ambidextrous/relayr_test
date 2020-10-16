@@ -18,6 +18,7 @@ class Category:
 @dataclass
 class Product:
     name: str
+    description: str
     category: str
     last_updated: datetime
     rating: float = 0.5

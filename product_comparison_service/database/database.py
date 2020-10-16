@@ -3,7 +3,7 @@ import sqlite3
 import aiosqlite
 from datetime import datetime
 
-from product_comparison_service.data_classes.data_classes import (
+from data_classes.data_classes import (
     Product,
     Supplier,
     SupplierProduct,
@@ -11,12 +11,19 @@ from product_comparison_service.data_classes.data_classes import (
 )
 
 
+def setup_database(database: str):
+    conn, cursor = get_database_conn_and_cursor(database)
+    create_product_table(conn=conn, cursor=cursor)
+    create_supplier_table(conn=conn, cursor=cursor)
+    create_supplier_product_table(conn=conn, cursor=cursor)
+
+
 def get_database_conn_and_cursor(database: str):
     """
     Get a connection and cursor connection to an Sqlite database instance
     """
     # Connect to DB (or create if does not exist)
-    conn = aiosqlite.connect(database)
+    conn = sqlite3.connect(database)
     cursor = conn.cursor()
     return conn, cursor
 
@@ -30,6 +37,7 @@ def create_product_table(conn, cursor):
     create_table_sql = """
     CREATE TABLE IF NOT EXISTS product (
         name text PRIMARY KEY,
+        description text,
         category text NOT NULL,
         last_updated timestamp NOT NULL,
         rating real
@@ -50,21 +58,6 @@ def create_supplier_table(conn, cursor):
         name text PRIMARY KEY,
         pull_url text,
         rating real
-    );
-    """
-    cursor.execute(create_table_sql)
-
-
-def create_category_table(conn, cursor):
-    """ 
-    Create category table 
-    :param conn: Connection object
-    :return:
-    """
-    create_table_sql = """
-    CREATE TABLE IF NOT EXISTS category (
-        name text PRIMARY KEY,
-        pull_url
     );
     """
     cursor.execute(create_table_sql)
@@ -91,8 +84,8 @@ def insert_product(conn, cursor, product: Product):
     Insert product into database
     """
     cursor.execute(
-        "INSERT INTO product values(?, ?, ?, ?)",
-        (product.name, product.category, product.last_updated, product.rating),
+        "INSERT INTO product values(?, ?, ?, ?, ?)",
+        (product.name, product.description, product.category, product.last_updated, product.rating),
     )
     conn.commit()
 
@@ -155,3 +148,14 @@ async def search_by_product_or_category(
     await cursor.execute()
     categories = await cursor.fetchall()
     return categories
+
+
+def insert_supplier(conn, cursor, supplier: Supplier):
+    """
+    Insert supplier into database
+    """
+    cursor.execute(
+        "INSERT INTO supplier values(?, ?, ?)",
+        (supplier.name, supplier.pull_url, supplier.rating),
+    )
+    conn.commit()
