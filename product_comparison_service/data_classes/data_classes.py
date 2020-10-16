@@ -1,26 +1,30 @@
 from dataclasses import dataclass
 from typing import Tuple
+from datetime import datetime
 
 
 @dataclass
 class Supplier:
     name: str
-    can_pull_from: bool
-    pull_url: str 
+    pull_url: str
+    rating: float = 0.5
 
 
 @dataclass
 class Category:
     name: str
-    products: Tuple[Product]
 
 
 @dataclass
 class Product:
-    name: str 
-    category: str 
-    last_updated: 
-    rating: int = 0
+    name: str
+    category: str
+    last_updated: datetime
+    rating: float = 0.5
 
 
-
+@dataclass
+class SupplierProduct:
+    supplier: Supplier
+    product: Product
+    price: float
