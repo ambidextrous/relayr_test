@@ -25,7 +25,7 @@ def make_app():
         os.remove(DATABASE)
         print(f"{DATABASE} deleted")
     else:
-      print(f"{DATABASE} does not exist")
+        print(f"{DATABASE} does not exist")
 
     app.db = setup_database(DATABASE)
     return app
