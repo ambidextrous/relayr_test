@@ -3,12 +3,7 @@ import sqlite3
 import aiosqlite
 from datetime import datetime
 
-from data_classes.data_classes import (
-    Product,
-    Supplier,
-    SupplierProduct,
-    Category,
-)
+from data_classes.data_classes import Product, Supplier, SupplierProduct, Category
 
 
 def setup_database(database: str):
@@ -74,6 +69,8 @@ def create_supplier_product_table(conn, cursor):
         supplier text NOT NULL,
         product text NOT NULL,
         price real NOT NULL
+        FOREIGN KEY(supplier) REFERENCES supplier(name)
+        FOREIGN KEY(product) REFERENCES product(name)
     );
     """
     cursor.execute(create_table_sql)
@@ -85,18 +82,13 @@ def insert_product(conn, cursor, product: Product):
     """
     cursor.execute(
         "INSERT INTO product values(?, ?, ?, ?, ?)",
-        (product.name, product.description, product.category, product.last_updated, product.rating),
-    )
-    conn.commit()
-
-
-def insert_category(conn, cursor, insert_supplier_product: SupplierProduct):
-    """
-    Insert category into database
-    """
-    cursor.execute(
-        "INSERT INTO supplier_product values(?, ?, ?)",
-        (supplier_product.supplier, supplier_product.product, supplier_product.price),
+        (
+            product.name,
+            product.description,
+            product.category,
+            product.last_updated,
+            product.rating,
+        ),
     )
     conn.commit()
 
@@ -112,7 +104,18 @@ def insert_supplier(conn, cursor, supplier: Supplier):
     conn.commit()
 
 
+def insert_supplier_product(conn, cursor, supplier_product: SupplierProduct):
+    """
+    Insert supplier into database
+    """
+    cursor.execute(
+        "INSERT INTO supplier_product values(?, ?, ?)",
+        (supplier_product.supplier, supplier_product.product, supplier_product.price),
+    )
+    conn.commit()
+
 ## Async functions
+
 
 async def search_by_product_or_category(
     conn, cursor, product: str = "", category: str = ""

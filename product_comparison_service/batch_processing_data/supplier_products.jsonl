@@ -1,0 +1,9 @@
+{"supplier": "iPet", "product": "coyotee", "price": 5.99}
+{"supplier": "iPet", "product": "orangutan", "price": 1000000}
+{"supplier": "iPet", "product": "dog", "price": 7}
+{"supplier": "CheapPets", "product": "coyotee", "price": 100}
+{"supplier": "CheapPets", "product": "gorilla", "price": 15}
+{"supplier": "CheapPets", "product": "dog", "price": 1}
+{"supplier": "DavesPets", "product": "dog", "price": 0.1}
+{"supplier": "DavesPets", "product": "coyotee", "price": 999999999}
+{"supplier": "DavesPets", "product": "orangutan", "price": 7}
