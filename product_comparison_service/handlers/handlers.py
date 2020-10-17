@@ -7,7 +7,12 @@ from datetime import datetime
 from tornado.web import RequestHandler
 import aiosqlite
 
-from database.database import search_by_product_or_category, update_product_search_results
+from database.database import (
+    search_by_product_or_category,
+    update_product_search_results,
+    delete_supplier_product_data,
+    update_supplier_product_data
+)
 from cache.cachedict import CacheDict
 from config import DATABASE, CACHE_MAX_LENGTH, REFETCH_LIMIT
 
@@ -65,7 +70,8 @@ class ProductHandler(RequestHandler):
         out_of_date_results = [
             result
             for result in results
-            if now - datetime.strptime(result.get("last_updated"), DATETIME_FORMAT) > REFETCH_LIMIT
+            if now - datetime.strptime(result.get("last_updated"), DATETIME_FORMAT)
+            > REFETCH_LIMIT
         ]
 
         # Update results in db and cache
@@ -92,23 +98,25 @@ class ProductHandler(RequestHandler):
 
         self.cache_dict[(product, category)] = results
 
-        self.write({"search_results": results})
+        self.write({"success": True, "search_results": results})
 
     async def make_dummy_calls_to_supplier_apis(self, search_results: List[Dict]):
         updated_results_dict = {}
 
         delay_in_seconds = 1
-        print(f"Simulating {len(search_results)} simultaneous asynchronous API calls, each with a delay of {delay_in_seconds} seconds...")
-        starttime = datetime.now() 
+        print(
+            f"Simulating {len(search_results)} simultaneous asynchronous API calls, each with a delay of {delay_in_seconds} seconds..."
+        )
+        starttime = datetime.now()
         dummy_external_api_calls = [asyncio.sleep(delay_in_seconds)]
         await asyncio.gather(*dummy_external_api_calls, return_exceptions=True)
-        
+
         now = datetime.strftime(datetime.now(), DATETIME_FORMAT)
 
         for result in search_results:
             result["last_updated"] = now
             result["price"] += 1
-            updated_results_dict[(result["supplier"],result["product"])] = result
+            updated_results_dict[(result["supplier"], result["product"])] = result
 
         time_taken = datetime.now() - starttime
         print(f"Total time for asynchronous API calls taken: {time_taken}")
@@ -121,10 +129,40 @@ class ProductHandler(RequestHandler):
 
     async def put(self):
         product = self.get_argument("product")
+        description = self.get_argument("description")
         category = self.get_argument("category")
-        self.write("Hello, put!")
+        price = self.get_argument("price")
+        supplier = self.get_argument("supplier")
+        product_rating = self.get_argument("product_rating", default=0.5)
+        last_update = datetime.strftime(datetime.now(), DATETIME_FORMAT)
+        conn, cursor = await self.get_async_conn_and_cur()
+        await delete_supplier_product_data(conn, cursor, product, description, category, price, supplier, product_rating, latest_update)
+        self.write(
+            {
+                "success": True, 
+                "deleted": {
+                    "product": product, 
+                    "description": description, 
+                    "category": category, 
+                    "price": price,
+                    "supplier": supplier,
+                    "product_rating": product_rating,
+                    "last_update": last_update
+                }
+            }
+        )
 
     async def delete(self):
-        product = self.get_arguments("product")
-        category = self.get_arguments("category")
-        self.write("Coming soon...")
+        product = self.get_argument("product")
+        supplier = self.get_argument("supplier")
+        conn, cursor = await self.get_async_conn_and_cur()
+        await delete_supplier_product_data(conn, cursor, product, supplier)
+        self.write(
+            {
+                "success": True, 
+                "deleted": {
+                    "product": product, 
+                    "supplier": supplier,
+                }
+            }
+        )

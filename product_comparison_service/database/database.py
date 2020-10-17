@@ -97,7 +97,7 @@ def insert_product(conn, cursor, product: Product):
 
 async def update_product_search_results(conn, cursor, search_results):
     """
-    Insert product into database
+    Update product search results in database
     """
 
     for result in search_results:
@@ -108,11 +108,7 @@ async def update_product_search_results(conn, cursor, search_results):
 
         await cursor.execute(
             supplier_product_sql,
-            (
-                result.get("price"),
-                result.get("supplier"),
-                result.get("product")
-            ),
+            (result.get("price"), result.get("supplier"), result.get("product")),
         )
 
         product_sql = """UPDATE product
@@ -120,13 +116,104 @@ async def update_product_search_results(conn, cursor, search_results):
             WHERE name = ?"""
 
         await cursor.execute(
-            product_sql,
-            (
-                result.get("last_updated"),
-                result.get("product")
-            ),
+            product_sql, (result.get("last_updated"), result.get("product"))
         )
-        
+
+    await conn.commit()
+
+
+async def delete_supplier_product_data(
+    conn,
+    cursor,
+    product,
+    supplier,
+    commit: bool = True,
+):
+    """
+    Update product search results in database
+    """
+
+    # Delete supplier_product
+
+    supplier_product_sql = """DELETE FROM supplier_product 
+        WHERE supplier = ? AND product = ?"""
+
+    await cursor.execute(
+        supplier_product_sql, (supplier, product)
+    )
+
+    # If no remaining suppliers for product, delete product too
+
+    product_select_sql = """SELECT supplier FROM supplier_product 
+        WHERE product = ?"""
+
+    select_results = await cursor.execute(product_select_sql, (product,))
+
+    if not select_results:
+
+        delete_product_sql = """DELETE FROM product WHERE name = ?"""
+
+        await cursor.execute(delete_product_sql, (product,))
+
+    if commit:
+        await conn.commit()
+
+
+async def update_supplier_product_data(
+    conn,
+    cursor,
+    product,
+    description,
+    category,
+    price,
+    supplier,
+    product_rating,
+    latest_update,
+):
+    """
+    Update product search results in database
+    """
+
+    # Delete existing supplier_product
+    await delete_supplier_product_data(
+        conn,
+        cursor,
+        product,
+        supplier,
+        commit=False,
+    )
+
+    product_select_sql = """SELECT supplier FROM product 
+        WHERE product = ?"""
+
+    select_results = await cursor.execute(product_select_sql, (product,))
+
+    # If product exists, update data
+    if select_results:
+
+        product_sql = """UPDATE product
+            SET description = ?,
+            category = ?,
+            product_rating = ?, 
+            last_updated = ?
+            WHERE name = ?"""
+
+        await cursor.execute(
+            product_sql, (last_updated, product)
+        )
+
+    # Else create product
+    else:
+        await cursor.execute(
+            "INSERT INTO product values(?, ?, ?, ?, ?)",
+            (product, description, category, last_updated, product_rating),
+        )
+
+    # Insert supplier_product
+    await cursor.execute(
+        "INSERT INTO supplier_product values(?, ?, ?)", (supplier, product, price)
+    )
+
     await conn.commit()
 
 
@@ -152,9 +239,6 @@ def insert_supplier_product(conn, cursor, supplier_product: SupplierProduct):
     conn.commit()
 
 
-## Async functions
-
-
 async def search_by_product_or_category(
     conn, cursor, product: str = "", category: str = ""
 ) -> List[str]:
@@ -175,6 +259,7 @@ async def search_by_product_or_category(
 
     statement = f"""
         SELECT product.name as product,
+            product.description as description,
             product.category as category,
             supplier_product.price as price,
             supplier_product.supplier as supplier,
