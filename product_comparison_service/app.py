@@ -6,18 +6,13 @@ import aiosqlite
 
 from config import PORT_ID, CACHE_MAX_LENGTH, DATABASE
 from data_classes.data_classes import Supplier, Category, Product
-from handlers.handlers import ProductReadHandler, ProductWriteHandler
+from handlers.handlers import ProductHandler
 from cache.cachedict import CacheDict
 from database.database import setup_database
 
 
 def make_app():
-    app = Application(
-        [
-            (r"/product/search", ProductReadHandler),
-            (r"/product/update", ProductWriteHandler),
-        ]
-    )
+    app = Application([(r"/product", ProductHandler)])
     app.cache = CacheDict(cache_len=CACHE_MAX_LENGTH)
 
     # TODO: remove

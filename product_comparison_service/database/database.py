@@ -56,6 +56,7 @@ def create_supplier_table(conn, cursor):
     );
     """
     cursor.execute(create_table_sql)
+    conn.commit()
 
 
 def create_supplier_product_table(conn, cursor):
@@ -74,6 +75,7 @@ def create_supplier_product_table(conn, cursor):
     );
     """
     cursor.execute(create_table_sql)
+    conn.commit()
 
 
 def insert_product(conn, cursor, product: Product):
@@ -91,6 +93,41 @@ def insert_product(conn, cursor, product: Product):
         ),
     )
     conn.commit()
+
+
+async def update_product_search_results(conn, cursor, search_results):
+    """
+    Insert product into database
+    """
+
+    for result in search_results:
+
+        supplier_product_sql = """UPDATE supplier_product
+            SET price = ?
+            WHERE supplier = ? AND product = ?"""
+
+        await cursor.execute(
+            supplier_product_sql,
+            (
+                result.get("price"),
+                result.get("supplier"),
+                result.get("product")
+            ),
+        )
+
+        product_sql = """UPDATE product
+            SET last_updated = ?
+            WHERE name = ?"""
+
+        await cursor.execute(
+            product_sql,
+            (
+                result.get("last_updated"),
+                result.get("product")
+            ),
+        )
+        
+    await conn.commit()
 
 
 def insert_supplier(conn, cursor, supplier: Supplier):
@@ -129,12 +166,12 @@ async def search_by_product_or_category(
         filter_term = ""
     elif product and category:
         filter_term = (
-            f"\n      WHERE product = '{product}' AND category = '{category}'\n"
+            f"\n        WHERE product = '{product}' AND category = '{category}'"
         )
     elif product:
-        filter_term = f"\n      WHERE product = '{product}'\n"
+        filter_term = f"\n        WHERE product = '{product}'"
     else:
-        filter_term = f"\n      WHERE category = '{category}'\n"
+        filter_term = f"\n        WHERE category = '{category}'"
 
     statement = f"""
         SELECT product.name as product,
@@ -144,7 +181,8 @@ async def search_by_product_or_category(
             supplier_product.price as price,
             product.rating as product_rating,
             supplier.rating as supplier_rating,
-            ROUND(((product.rating + supplier.rating)/2),2) as combined_rating 
+            ROUND(((product.rating + supplier.rating)/2),2) as combined_rating,
+            product.last_updated as last_updated 
         FROM product 
         INNER JOIN supplier_product
         ON product.name = supplier_product.product
@@ -152,7 +190,6 @@ async def search_by_product_or_category(
         ON supplier_product.supplier = supplier.name {filter_term}
         ORDER BY (product.rating + supplier.rating) DESC
         """
-    print(f"statement={statement}")
     await cursor.execute(statement)
     categories = await cursor.fetchall()
     return categories
