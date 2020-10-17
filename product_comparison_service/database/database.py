@@ -168,7 +168,7 @@ async def update_supplier_product_data(
     price,
     supplier,
     product_rating,
-    latest_update,
+    last_updated,
 ):
     """
     Update product search results in database
@@ -183,8 +183,8 @@ async def update_supplier_product_data(
         commit=False,
     )
 
-    product_select_sql = """SELECT supplier FROM product 
-        WHERE product = ?"""
+    product_select_sql = """SELECT name FROM product 
+        WHERE name = ?"""
 
     select_results = await cursor.execute(product_select_sql, (product,))
 

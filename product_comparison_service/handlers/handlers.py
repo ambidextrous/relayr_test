@@ -42,6 +42,11 @@ class ProductHandler(RequestHandler):
         return self.async_conn, cursor
 
     async def get(self):
+        """
+        localhost:8888/product?product=coyotee&category=Canines
+
+        curl -d "product=coyotee&category=Canines" -X GET localhost:8888/product
+        """
         out_of_date_results = []
 
         product = self.get_argument("product", default=None)
@@ -128,15 +133,20 @@ class ProductHandler(RequestHandler):
         await update_product_search_results(conn, cursor, search_results)
 
     async def put(self):
+        """
+        localhost:8888/product?product=own&description=wise&price=3&supplier=DavesPets&product_rating=0.98&category=Birds
+        
+        curl -d "product=own&description=wise&price=3&supplier=DavesPets&product_rating=0.98&category=Birds" -X PUT localhost:8888/product
+        """
         product = self.get_argument("product")
         description = self.get_argument("description")
         category = self.get_argument("category")
         price = self.get_argument("price")
         supplier = self.get_argument("supplier")
         product_rating = self.get_argument("product_rating", default=0.5)
-        last_update = datetime.strftime(datetime.now(), DATETIME_FORMAT)
+        last_updated = datetime.strftime(datetime.now(), DATETIME_FORMAT)
         conn, cursor = await self.get_async_conn_and_cur()
-        await delete_supplier_product_data(conn, cursor, product, description, category, price, supplier, product_rating, latest_update)
+        await update_supplier_product_data(conn, cursor, product, description, category, price, supplier, product_rating, last_updated)
         self.write(
             {
                 "success": True, 
@@ -147,12 +157,18 @@ class ProductHandler(RequestHandler):
                     "price": price,
                     "supplier": supplier,
                     "product_rating": product_rating,
-                    "last_update": last_update
+                    "last_updated": last_updated
                 }
             }
         )
 
     async def delete(self):
+        """
+        localhost:8888/product?product=coyotee&supplier=DavesPets
+
+        curl -d "product=coyotee&supplier=DavesPets" -X DELETE localhost:8888/product
+
+        """
         product = self.get_argument("product")
         supplier = self.get_argument("supplier")
         conn, cursor = await self.get_async_conn_and_cur()
