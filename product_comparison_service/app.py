@@ -9,7 +9,6 @@ from data_classes.data_classes import Supplier, Category, Product
 from handlers.handlers import ProductReadHandler, ProductWriteHandler
 from cache.cachedict import CacheDict
 from database.database import setup_database
-from batch_processing.cli import cli
 
 
 def make_app():
@@ -20,7 +19,6 @@ def make_app():
         ]
     )
     app.cache = CacheDict(cache_len=CACHE_MAX_LENGTH)
-    cli()    
 
     # TODO: remove
     # While in development, create fresh DB instance for each run
@@ -30,7 +28,14 @@ def make_app():
     else:
         print(f"{DATABASE} does not exist")
 
-    app.db = setup_database(DATABASE)
+    setup_database(DATABASE)
+
+    os.system("python cli.py add_products batch_processing_data/products.jsonl")
+    os.system("python cli.py add_suppliers batch_processing_data/suppliers.jsonl")
+    os.system(
+        "python cli.py add_supplier_products batch_processing_data/supplier_products.jsonl"
+    )
+
     return app
 
 

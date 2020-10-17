@@ -68,8 +68,8 @@ def create_supplier_product_table(conn, cursor):
     CREATE TABLE IF NOT EXISTS supplier_product (
         supplier text NOT NULL,
         product text NOT NULL,
-        price real NOT NULL
-        FOREIGN KEY(supplier) REFERENCES supplier(name)
+        price real NOT NULL,
+        FOREIGN KEY(supplier) REFERENCES supplier(name),
         FOREIGN KEY(product) REFERENCES product(name)
     );
     """
@@ -114,6 +114,7 @@ def insert_supplier_product(conn, cursor, supplier_product: SupplierProduct):
     )
     conn.commit()
 
+
 ## Async functions
 
 
@@ -127,13 +128,15 @@ async def search_by_product_or_category(
     if (not product) and (not category):
         filter_term = ""
     elif product and category:
-        filter_term = f"\n      WHERE product = {product} AND category = {category}\n"
+        filter_term = (
+            f"\n      WHERE product = '{product}' AND category = '{category}'\n"
+        )
     elif product:
-        filter_term = f"\n      WHERE product = {product}\n"
+        filter_term = f"\n      WHERE product = '{product}'\n"
     else:
-        filter_term = f"\n      WHERE category = {category}\n"
+        filter_term = f"\n      WHERE category = '{category}'\n"
 
-    filter_term = f"""
+    statement = f"""
         SELECT product.name as product,
             product.category as category,
             supplier_product.price as price,
@@ -141,6 +144,7 @@ async def search_by_product_or_category(
             supplier_product.price as price,
             product.rating as product_rating,
             supplier.rating as supplier_rating,
+            ROUND(((product.rating + supplier.rating)/2),2) as combined_rating 
         FROM product 
         INNER JOIN supplier_product
         ON product.name = supplier_product.product
@@ -148,7 +152,8 @@ async def search_by_product_or_category(
         ON supplier_product.supplier = supplier.name {filter_term}
         ORDER BY (product.rating + supplier.rating) DESC
         """
-    await cursor.execute()
+    print(f"statement={statement}")
+    await cursor.execute(statement)
     categories = await cursor.fetchall()
     return categories
 
