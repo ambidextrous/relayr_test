@@ -57,7 +57,7 @@ class ProductHandler(RequestHandler):
 
         if (product, category) in self.cache_dict:
 
-            products_found = self.write(self.cache_dict[(product, category)])
+            results = self.cache_dict[(product, category)]
 
         # Check if search results in database
 
@@ -92,6 +92,9 @@ class ProductHandler(RequestHandler):
 
                 key = (result["supplier"], result["product"])
 
+                print(f"key={key}")
+                print(f"updated_results={updated_results}")
+                
                 if key in updated_results:
                     combined_results.append(updated_results[key])
 
