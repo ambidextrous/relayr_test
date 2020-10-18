@@ -82,7 +82,7 @@ class ProductHandler(RequestHandler):
 
         # Update results in db and cache
 
-        if out_of_date_results:
+        if out_of_date_results or not results:
 
             updated_results = await self.make_dummy_calls_to_supplier_apis(results)
 
@@ -110,13 +110,14 @@ class ProductHandler(RequestHandler):
 
     async def make_dummy_calls_to_supplier_apis(self, search_results: List[Dict]):
         updated_results_dict = {}
+        num_api_calls = len(search_results) or 10
 
         delay_in_seconds = 1
         print(
             f"Simulating {len(search_results)} simultaneous asynchronous API calls, each with a delay of {delay_in_seconds} seconds..."
         )
         starttime = datetime.now()
-        dummy_external_api_calls = [asyncio.sleep(delay_in_seconds)]
+        dummy_external_api_calls = [asyncio.sleep(delay_in_seconds) for i in range(num_api_calls)]
         await asyncio.gather(*dummy_external_api_calls, return_exceptions=True)
 
         now = datetime.strftime(datetime.now(), DATETIME_FORMAT)

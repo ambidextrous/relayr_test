@@ -12,17 +12,11 @@ from product_comparison_service.database.database import setup_database
 
 
 def make_app():
-    settings = {
-        "static_path": os.path.join(os.path.dirname(__file__), "static"),
-        "cookie_secret": "__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__",
-        "xsrf_cookies": True,
-    }
     app = Application(
         [
             (r"/v0.1/product", ProductHandler),
             (r"/v0.1/docs", DocsHandler),
-        ],
-        **settings,
+        ]
     )
     app.cache = CacheDict(cache_len=CACHE_MAX_LENGTH)
 
