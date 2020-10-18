@@ -7,15 +7,15 @@ from datetime import datetime
 from tornado.web import RequestHandler
 import aiosqlite
 
-from database.database import (
+from product_comparison_service.database.database import (
     search_by_product_or_category,
     update_product_search_results,
     delete_supplier_product_data,
     update_supplier_product_data,
 )
-from cache.cachedict import CacheDict
-from docs.docs import DOCS
-from config import DATABASE, CACHE_MAX_LENGTH, REFETCH_LIMIT
+from product_comparison_service.cache.cachedict import CacheDict
+from product_comparison_service.docs.docs import DOCS
+from product_comparison_service.config import DATABASE, CACHE_MAX_LENGTH, REFETCH_LIMIT
 
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%f"
 
@@ -190,5 +190,8 @@ class ProductHandler(RequestHandler):
 
 
 class DocsHandler(RequestHandler):
-    def get(self):
-        self.write(DOCS)
+    async def get(self):
+        self.write(get_docs())
+
+def get_docs():
+    return DOCS

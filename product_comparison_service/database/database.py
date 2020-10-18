@@ -3,7 +3,7 @@ import sqlite3
 import aiosqlite
 from datetime import datetime
 
-from data_classes.data_classes import Product, Supplier, SupplierProduct, Category
+from product_comparison_service.data_classes.data_classes import Product, Supplier, SupplierProduct, Category
 
 
 def setup_database(database: str):

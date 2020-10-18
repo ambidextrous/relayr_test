@@ -4,11 +4,11 @@ import tornado.web
 from tornado.web import RequestHandler, Application, StaticFileHandler
 import aiosqlite
 
-from config import PORT_ID, CACHE_MAX_LENGTH, DATABASE, LOGGING_FILE
-from data_classes.data_classes import Supplier, Category, Product
-from handlers.handlers import ProductHandler, DocsHandler
-from cache.cachedict import CacheDict
-from database.database import setup_database
+from product_comparison_service.config import PORT_ID, CACHE_MAX_LENGTH, DATABASE, LOGGING_FILE
+from product_comparison_service.data_classes.data_classes import Supplier, Category, Product
+from product_comparison_service.handlers.handlers import ProductHandler, DocsHandler
+from product_comparison_service.cache.cachedict import CacheDict
+from product_comparison_service.database.database import setup_database
 
 
 def make_app():
