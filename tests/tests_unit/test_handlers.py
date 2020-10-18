@@ -1,4 +1,3 @@
-#import asynctest
 import pytest
 from asyncio import sleep
 from unittest import mock

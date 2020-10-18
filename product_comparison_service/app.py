@@ -36,10 +36,10 @@ def make_app():
 
     setup_database(DATABASE)
 
-    os.system("python cli.py add_products batch_processing_data/products.jsonl")
-    os.system("python cli.py add_suppliers batch_processing_data/suppliers.jsonl")
+    os.system("python product_comparison_service/cli.py add_products product_comparison_service/batch_processing_data/products.jsonl")
+    os.system("python product_comparison_service/cli.py add_suppliers product_comparison_service/batch_processing_data/suppliers.jsonl")
     os.system(
-        "python cli.py add_supplier_products batch_processing_data/supplier_products.jsonl"
+        "python product_comparison_service/cli.py add_supplier_products product_comparison_service/batch_processing_data/supplier_products.jsonl"
     )
 
     return app
