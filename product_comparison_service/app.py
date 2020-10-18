@@ -1,18 +1,29 @@
 import os
 import tornado.ioloop
 import tornado.web
-from tornado.web import RequestHandler, Application
+from tornado.web import RequestHandler, Application, StaticFileHandler
 import aiosqlite
 
-from config import PORT_ID, CACHE_MAX_LENGTH, DATABASE
+from config import PORT_ID, CACHE_MAX_LENGTH, DATABASE, LOGGING_FILE
 from data_classes.data_classes import Supplier, Category, Product
-from handlers.handlers import ProductHandler
+from handlers.handlers import ProductHandler, DocsHandler
 from cache.cachedict import CacheDict
 from database.database import setup_database
 
 
 def make_app():
-    app = Application([(r"/product", ProductHandler)])
+    settings = {
+        "static_path": os.path.join(os.path.dirname(__file__), "static"),
+        "cookie_secret": "__TODO:_GENERATE_YOUR_OWN_RANDOM_VALUE_HERE__",
+        "xsrf_cookies": True,
+    }
+    app = Application(
+        [
+            (r"/v0.1/product", ProductHandler),
+            (r"/v0.1/docs", DocsHandler),
+        ],
+        **settings,
+    )
     app.cache = CacheDict(cache_len=CACHE_MAX_LENGTH)
 
     # TODO: remove
@@ -35,6 +46,9 @@ def make_app():
 
 
 if __name__ == "__main__":
+    import logging
+
+    logging.basicConfig(filename=LOGGING_FILE, level=logging.INFO)
     app = make_app()
     app.listen(PORT_ID)
     tornado.ioloop.IOLoop.current().start()

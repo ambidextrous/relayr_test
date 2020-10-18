@@ -11,9 +11,10 @@ from database.database import (
     search_by_product_or_category,
     update_product_search_results,
     delete_supplier_product_data,
-    update_supplier_product_data
+    update_supplier_product_data,
 )
 from cache.cachedict import CacheDict
+from docs.docs import DOCS
 from config import DATABASE, CACHE_MAX_LENGTH, REFETCH_LIMIT
 
 DATETIME_FORMAT = "%Y-%m-%dT%H:%M:%S.%f"
@@ -43,9 +44,9 @@ class ProductHandler(RequestHandler):
 
     async def get(self):
         """
-        localhost:8888/product?product=coyotee&category=Canines
+        localhost:8888/v0.1/product?product=coyotee&category=Canines
 
-        curl -d "product=coyotee&category=Canines" -X GET localhost:8888/product
+        curl -d "product=coyotee&category=Canines" -X GET localhost:8888/v0.1/product
         """
         out_of_date_results = []
 
@@ -134,9 +135,9 @@ class ProductHandler(RequestHandler):
 
     async def put(self):
         """
-        localhost:8888/product?product=own&description=wise&price=3&supplier=DavesPets&product_rating=0.98&category=Birds
+        localhost:8888/v0.1/product?product=owl&description=wise&price=3&supplier=DavesPets&product_rating=0.98&category=Birds
         
-        curl -d "product=own&description=wise&price=3&supplier=DavesPets&product_rating=0.98&category=Birds" -X PUT localhost:8888/product
+        curl -d "product=owl&description=wise&price=3&supplier=DavesPets&product_rating=0.98&category=Birds" -X PUT localhost:8888/v0.1/product
         """
         product = self.get_argument("product")
         description = self.get_argument("description")
@@ -146,27 +147,37 @@ class ProductHandler(RequestHandler):
         product_rating = self.get_argument("product_rating", default=0.5)
         last_updated = datetime.strftime(datetime.now(), DATETIME_FORMAT)
         conn, cursor = await self.get_async_conn_and_cur()
-        await update_supplier_product_data(conn, cursor, product, description, category, price, supplier, product_rating, last_updated)
+        await update_supplier_product_data(
+            conn,
+            cursor,
+            product,
+            description,
+            category,
+            price,
+            supplier,
+            product_rating,
+            last_updated,
+        )
         self.write(
             {
-                "success": True, 
-                "deleted": {
-                    "product": product, 
-                    "description": description, 
-                    "category": category, 
+                "success": True,
+                "upserted": {
+                    "product": product,
+                    "description": description,
+                    "category": category,
                     "price": price,
                     "supplier": supplier,
                     "product_rating": product_rating,
-                    "last_updated": last_updated
-                }
+                    "last_updated": last_updated,
+                },
             }
         )
 
     async def delete(self):
         """
-        localhost:8888/product?product=coyotee&supplier=DavesPets
+        localhost:8888/v0.1/product?product=coyotee&supplier=DavesPets
 
-        curl -d "product=coyotee&supplier=DavesPets" -X DELETE localhost:8888/product
+        curl -d "product=coyotee&supplier=DavesPets" -X DELETE localhost:8888/v0.1/product
 
         """
         product = self.get_argument("product")
@@ -174,11 +185,10 @@ class ProductHandler(RequestHandler):
         conn, cursor = await self.get_async_conn_and_cur()
         await delete_supplier_product_data(conn, cursor, product, supplier)
         self.write(
-            {
-                "success": True, 
-                "deleted": {
-                    "product": product, 
-                    "supplier": supplier,
-                }
-            }
+            {"success": True, "deleted": {"product": product, "supplier": supplier}}
         )
+
+
+class DocsHandler(RequestHandler):
+    def get(self):
+        self.write(DOCS)

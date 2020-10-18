@@ -123,11 +123,7 @@ async def update_product_search_results(conn, cursor, search_results):
 
 
 async def delete_supplier_product_data(
-    conn,
-    cursor,
-    product,
-    supplier,
-    commit: bool = True,
+    conn, cursor, product, supplier, commit: bool = True
 ):
     """
     Update product search results in database
@@ -138,9 +134,7 @@ async def delete_supplier_product_data(
     supplier_product_sql = """DELETE FROM supplier_product 
         WHERE supplier = ? AND product = ?"""
 
-    await cursor.execute(
-        supplier_product_sql, (supplier, product)
-    )
+    await cursor.execute(supplier_product_sql, (supplier, product))
 
     # If no remaining suppliers for product, delete product too
 
@@ -175,13 +169,7 @@ async def update_supplier_product_data(
     """
 
     # Delete existing supplier_product
-    await delete_supplier_product_data(
-        conn,
-        cursor,
-        product,
-        supplier,
-        commit=False,
-    )
+    await delete_supplier_product_data(conn, cursor, product, supplier, commit=False)
 
     product_select_sql = """SELECT name FROM product 
         WHERE name = ?"""
@@ -198,9 +186,7 @@ async def update_supplier_product_data(
             last_updated = ?
             WHERE name = ?"""
 
-        await cursor.execute(
-            product_sql, (last_updated, product)
-        )
+        await cursor.execute(product_sql, (last_updated, product))
 
     # Else create product
     else:
