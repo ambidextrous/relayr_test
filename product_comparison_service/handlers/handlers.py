@@ -92,9 +92,6 @@ class ProductHandler(RequestHandler):
 
                 key = (result["supplier"], result["product"])
 
-                print(f"key={key}")
-                print(f"updated_results={updated_results}")
-                
                 if key in updated_results:
                     combined_results.append(updated_results[key])
 
@@ -105,8 +102,10 @@ class ProductHandler(RequestHandler):
 
             await self.update_db(combined_results)
 
+        # Update cache
         self.cache_dict[(product, category)] = results
 
+        # Write response
         self.write({"success": True, "search_results": results})
 
     async def make_dummy_calls_to_supplier_apis(self, search_results: List[Dict]):
