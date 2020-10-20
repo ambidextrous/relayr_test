@@ -1,6 +1,21 @@
 # Product comparison service task
 
-I had some fun with this task. Thanks guys!
+A service that helps the end customer to decide which website or retail shop
+they can use to buy their product by comparing data from different providers.
+
+Service details:
+
+* Language: Python (8.5)
+* Framework: `tornado`
+* Format: REST API
+* Documentation: OpenAPI web-page 
+* Pulls from:
+  * LRU Cache dictionary
+  * Sqlite3 database instance
+  * (Dummy) external APIs
+* Accepts push via:
+  * Batch processing CLI 
+  * REST API endpoint
 
 # Instructions
 

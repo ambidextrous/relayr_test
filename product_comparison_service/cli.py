@@ -26,6 +26,9 @@ def cli():
 )
 @click.argument("filename")
 def add_products(filename: str):
+    """
+    Insert product table entries
+    """
     with open(filename, encoding="utf-8") as file:
         products = [json.loads(l.rstrip("\n")) for l in file if l]
         conn, cursor = get_database_conn_and_cursor(DATABASE)
@@ -46,6 +49,9 @@ def add_products(filename: str):
 )
 @click.argument("filename")
 def add_suppliers(filename: str):
+    """
+    Insert supplier table entries
+    """
     with open(filename, encoding="utf-8") as file:
         suppliers = [json.loads(l.rstrip("\n")) for l in file if l]
         conn, cursor = get_database_conn_and_cursor(DATABASE)
@@ -64,6 +70,9 @@ def add_suppliers(filename: str):
 )
 @click.argument("filename")
 def add_supplier_products(filename: str):
+    """
+    Insert supplier_product table entries
+    """
     with open(filename, encoding="utf-8") as file:
         supplier_products = [json.loads(l.rstrip("\n")) for l in file if l]
         conn, cursor = get_database_conn_and_cursor(DATABASE)

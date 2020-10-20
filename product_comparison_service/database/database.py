@@ -1,21 +1,28 @@
-from typing import List
+from typing import List, Dict, Optional
 import sqlite3
 import aiosqlite
 from datetime import datetime
+from sqlite3 import Connection, Cursor
+from aiosqlite import Connection as AsyncConnection, Cursor as AsyncCursor
 
-from product_comparison_service.data_classes.data_classes import Product, Supplier, SupplierProduct, Category
+from product_comparison_service.data_classes.data_classes import (
+    Product,
+    Supplier,
+    SupplierProduct,
+    Category,
+)
 
 
-def setup_database(database: str):
+def setup_database(database: str) -> None:
     conn, cursor = get_database_conn_and_cursor(database)
     create_product_table(conn=conn, cursor=cursor)
     create_supplier_table(conn=conn, cursor=cursor)
     create_supplier_product_table(conn=conn, cursor=cursor)
 
 
-def get_database_conn_and_cursor(database: str):
+def get_database_conn_and_cursor(database: str) -> None:
     """
-    Get a connection and cursor connection to an Sqlite database instance
+    Get a synchronous connection and cursor connection to an Sqlite database instance
     """
     # Connect to DB (or create if does not exist)
     conn = sqlite3.connect(database)
@@ -23,11 +30,9 @@ def get_database_conn_and_cursor(database: str):
     return conn, cursor
 
 
-def create_product_table(conn, cursor):
+def create_product_table(conn: Connection, cursor: Cursor) -> None:
     """ 
     Create product table 
-    :param conn: Connection object
-    :return:
     """
     create_table_sql = """
     CREATE TABLE IF NOT EXISTS product (
@@ -42,11 +47,9 @@ def create_product_table(conn, cursor):
     conn.commit()
 
 
-def create_supplier_table(conn, cursor):
+def create_supplier_table(conn: Connection, cursor: Cursor) -> None:
     """ 
     Create supplier table 
-    :param conn: Connection object
-    :return:
     """
     create_table_sql = """
     CREATE TABLE IF NOT EXISTS supplier (
@@ -59,11 +62,9 @@ def create_supplier_table(conn, cursor):
     conn.commit()
 
 
-def create_supplier_product_table(conn, cursor):
+def create_supplier_product_table(conn: Connection, cursor: Cursor) -> None:
     """ 
-    Create category table 
-    :param conn: Connection object
-    :return:
+    Create supplier_product table 
     """
     create_table_sql = """
     CREATE TABLE IF NOT EXISTS supplier_product (
@@ -78,7 +79,7 @@ def create_supplier_product_table(conn, cursor):
     conn.commit()
 
 
-def insert_product(conn, cursor, product: Product):
+def insert_product(conn: Connection, cursor: Cursor, product: Product) -> None:
     """
     Insert product into database
     """
@@ -95,7 +96,9 @@ def insert_product(conn, cursor, product: Product):
     conn.commit()
 
 
-async def update_product_search_results(conn, cursor, search_results):
+async def update_product_search_results(
+    conn: AsyncConnection, cursor: AsyncCursor, search_results: Dict[str, str]
+) -> None:
     """
     Update product search results in database
     """
@@ -123,10 +126,14 @@ async def update_product_search_results(conn, cursor, search_results):
 
 
 async def delete_supplier_product_data(
-    conn, cursor, product, supplier, commit: bool = True
-):
+    conn: AsyncConnection,
+    cursor: AsyncCursor,
+    product: Product,
+    supplier: Supplier,
+    commit: bool = True,
+) -> None:
     """
-    Update product search results in database
+    Delete supplier_product data from database
     """
 
     # Delete supplier_product
@@ -154,16 +161,16 @@ async def delete_supplier_product_data(
 
 
 async def update_supplier_product_data(
-    conn,
-    cursor,
-    product,
-    description,
-    category,
-    price,
-    supplier,
-    product_rating,
-    last_updated,
-):
+    conn: AsyncConnection,
+    cursor: AsyncCursor,
+    product: str,
+    description: str,
+    category: str,
+    price: float,
+    supplier: str,
+    product_rating: float,
+    last_updated: str,
+) -> None:
     """
     Update product search results in database
     """
@@ -203,7 +210,7 @@ async def update_supplier_product_data(
     await conn.commit()
 
 
-def insert_supplier(conn, cursor, supplier: Supplier):
+def insert_supplier(conn: Connection, cursor: Cursor, supplier: Supplier) -> None:
     """
     Insert supplier into database
     """
@@ -214,7 +221,9 @@ def insert_supplier(conn, cursor, supplier: Supplier):
     conn.commit()
 
 
-def insert_supplier_product(conn, cursor, supplier_product: SupplierProduct):
+def insert_supplier_product(
+    conn: Connection, cursor: Cursor, supplier_product: SupplierProduct
+) -> None:
     """
     Insert supplier into database
     """
@@ -266,7 +275,7 @@ async def search_by_product_or_category(
     return categories
 
 
-def insert_supplier(conn, cursor, supplier: Supplier):
+def insert_supplier(conn, cursor, supplier: Supplier) -> None:
     """
     Insert supplier into database
     """
