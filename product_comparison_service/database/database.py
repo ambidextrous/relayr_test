@@ -239,6 +239,8 @@ async def search_by_product_or_category(
 ) -> List[str]:
     """
     Search products by product and or category
+
+    Returns results ranked by combined product.rating + supplier.rating
     """
 
     if (not product) and (not category):

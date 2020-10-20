@@ -55,6 +55,8 @@ class ProductHandler(RequestHandler):
 
     async def get(self) -> None:
         """
+        Returns search results ordered by combined product and supplier scores.
+
         Handles calls to GET method of /product end-point
         - First searches cache for search results
         - If no results found in cache, searches database
